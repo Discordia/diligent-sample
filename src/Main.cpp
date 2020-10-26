@@ -22,26 +22,11 @@ void InitializeEngine(const NativeWindow* pWindow);
 void InitializePipeline();
 void Render();
 
-RENDER_DEVICE_TYPE m_DeviceType = RENDER_DEVICE_TYPE_GL;
 RefCntAutoPtr<IPipelineState> m_pPSO;
-RefCntAutoPtr<IEngineFactory> m_pEngineFactory;
 RefCntAutoPtr<IRenderDevice> m_pDevice;
 RefCntAutoPtr<IDeviceContext> m_pImmediateContext;
 std::vector<RefCntAutoPtr<IDeviceContext>> m_pDeferredContexts;
 RefCntAutoPtr<ISwapChain> m_pSwapChain;
-std::vector<DisplayModeAttribs> m_DisplayModes;
-
-int m_InitialWindowWidth = 0;
-int m_InitialWindowHeight = 0;
-int m_ValidationLevel = -1;
-std::string m_AppTitle;
-Uint32 m_AdapterId = 0;
-ADAPTER_TYPE m_AdapterType = ADAPTER_TYPE_UNKNOWN;
-int m_SelectedDisplayMode = 0;
-bool m_bVSync = false;
-bool m_bFullScreenMode = false;
-bool m_bShowAdaptersDialog = true;
-double m_CurrentTime = 0;
 
 static const char* VSSource = R"(
 struct PSInput
@@ -90,7 +75,6 @@ void InitializeEngine(const NativeWindow* pWindow) {
     std::vector<IDeviceContext*> ppContexts;
     VERIFY_EXPR(pWindow != nullptr);
     auto* pFactoryOpenGL = GetEngineFactoryOpenGL();
-    m_pEngineFactory = pFactoryOpenGL;
     EngineGLCreateInfo CreationAttribs;
     CreationAttribs.Window = *pWindow;
 
@@ -175,26 +159,25 @@ void InitializePipeline() {
 void Render() {
     auto* pRTV = m_pSwapChain->GetCurrentBackBufferRTV();
     auto* pDSV = m_pSwapChain->GetDepthBufferDSV();
-    m_pImmediateContext->SetRenderTargets(
-            1, &pRTV, pDSV, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+    m_pImmediateContext->SetRenderTargets(1, &pRTV, pDSV, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
     // Clear the back buffer
     const float ClearColor[] = {0.350f, 0.350f, 0.350f, 1.0f};
+
     // Let the engine perform required state transitions
-    m_pImmediateContext->ClearRenderTarget(
-            pRTV, ClearColor, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-    m_pImmediateContext->ClearDepthStencil(
-            pDSV, CLEAR_DEPTH_FLAG, 1.f, 0,
-            RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+    m_pImmediateContext->ClearRenderTarget(pRTV, ClearColor, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+    m_pImmediateContext->ClearDepthStencil(pDSV, CLEAR_DEPTH_FLAG, 1.f, 0,RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
     // Set pipeline state in the immediate context
     m_pImmediateContext->SetPipelineState(m_pPSO);
+
     // We need to commit shader resource. Even though in this example
     // we don't really have any resources, this call also sets the shaders
-    m_pImmediateContext->CommitShaderResources(
-            nullptr, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+    m_pImmediateContext->CommitShaderResources(nullptr, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+
+    // We will render 3 vertices
     DrawAttribs drawAttrs;
-    drawAttrs.NumVertices = 3;  // We will render 3 vertices
+    drawAttrs.NumVertices = 3;
     m_pImmediateContext->Draw(drawAttrs);
 }
 
