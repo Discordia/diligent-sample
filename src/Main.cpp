@@ -1,4 +1,3 @@
-#include <memory>
 #include <vector>
 
 #ifndef GL_SUPPORTED
@@ -96,9 +95,7 @@ void InitializeEngine(const NativeWindow* pWindow) {
 }
 
 void InitializePipeline() {
-
     // Pipeline state object encompasses configuration of all GPU stages
-
     GraphicsPipelineStateCreateInfo PSOCreateInfo;
 
     // Pipeline state name is used by the engine to report issues.
