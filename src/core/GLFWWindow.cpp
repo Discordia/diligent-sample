@@ -1,8 +1,10 @@
-#include <GLFWWindow.h>
+#include <core/GLFWWindow.h>
 
 using std::string;
 using std::shared_ptr;
 using std::unique_ptr;
+using std::make_unique;
+using std::make_shared;
 
 GLFWWindow::GLFWWindow(GLFWwindow *window, std::shared_ptr<RenderContext> renderContext)
     : window(window), renderContext(std::move(renderContext)) {}
@@ -32,8 +34,8 @@ unique_ptr<GLFWWindow> GLFWWindow::create(const string& title) {
 
     NativeWindow nativeWindow{windowHandle};
 
-    auto renderContext = std::make_shared<RenderContext>(RenderContext::create(&nativeWindow));
-    return std::make_unique<GLFWWindow>(window, renderContext);
+    auto renderContext = make_shared<RenderContext>(RenderContext::create(&nativeWindow));
+    return make_unique<GLFWWindow>(window, renderContext);
 }
 
 bool GLFWWindow::running() {

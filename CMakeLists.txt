@@ -17,7 +17,7 @@ set(GLFW_BUILD_TESTS OFF CACHE BOOL  "GLFW lib only")
 set(GLFW_BUILD_DOCS OFF CACHE BOOL  "GLFW lib only")
 set(GLFW_BUILD_INSTALL OFF CACHE BOOL  "GLFW lib only")
 
-file(GLOB SOURCE_FILES src/*.cpp)
+file(GLOB SOURCE_FILES src/*.cpp src/core/*.cpp)
 
 add_executable(main ${SOURCE_FILES})
 target_link_libraries(main

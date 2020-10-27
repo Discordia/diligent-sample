@@ -1,5 +1,5 @@
-#include <GLFWWindow.h>
-#include <Renderer.h>
+#include <core/GLFWWindow.h>
+#include <core/Renderer.h>
 
 int main() {
     auto window = GLFWWindow::create("Diligent Sample");
