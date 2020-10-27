@@ -10,15 +10,16 @@ add_subdirectory(DiligentCore)
 
 include_directories("glfw/include")
 include_directories(DiligentCore)
+include_directories(src)
 
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL  "GLFW lib only")
 set(GLFW_BUILD_TESTS OFF CACHE BOOL  "GLFW lib only")
 set(GLFW_BUILD_DOCS OFF CACHE BOOL  "GLFW lib only")
 set(GLFW_BUILD_INSTALL OFF CACHE BOOL  "GLFW lib only")
 
-set(SRC src/Main.cpp)
+file(GLOB SOURCE_FILES src/*.cpp)
 
-add_executable(main ${SRC})
+add_executable(main ${SOURCE_FILES})
 target_link_libraries(main
   glfw
   Diligent-GraphicsEngine
