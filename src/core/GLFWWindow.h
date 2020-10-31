@@ -6,21 +6,20 @@
 #include <string>
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
-#include <core/RenderContext.h>
+#include <core/RendererFactory.h>
 
 class GLFWWindow {
 public:
-    GLFWWindow(GLFWwindow *window, std::shared_ptr<RenderContext> renderContext);
+    explicit GLFWWindow(GLFWwindow *window);
     ~GLFWWindow();
 
     static std::unique_ptr<GLFWWindow> create(const std::string& title);
 
-    bool running();
-    void pollEvents();
-    void swapBuffers();
-    std::shared_ptr<RenderContext> getRenderContext();
+    bool  running();
+    void  pollEvents();
+    void  swapBuffers();
+    void* getWindowHandle();
 
 private:
     GLFWwindow* window;
-    std::shared_ptr<RenderContext> renderContext;
 };

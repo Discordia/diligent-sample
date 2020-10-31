@@ -1,18 +1,32 @@
 #pragma once
 
-#include <core/RenderContext.h>
+#ifndef GL_SUPPORTED
+#    define GL_SUPPORTED 1
+#endif
+
+#ifndef PLATFORM_MACOS
+#    define PLATFORM_MACOS 1
+#endif
+
+#include <memory>
+#include <EngineFactoryOpenGL.h>
+#include <Common/interface/RefCntAutoPtr.hpp>
+
+using namespace Diligent;
 
 class Renderer {
 public:
-    Renderer(std::shared_ptr<RenderContext>  renderContext, RefCntAutoPtr<IPipelineState> pipelineState);
-
+    Renderer(const RefCntAutoPtr<IRenderDevice>& renderDevice,
+             const RefCntAutoPtr<IDeviceContext>& deviceContext,
+             const RefCntAutoPtr<ISwapChain>& swapChain);
     ~Renderer() = default;
 
-    static Renderer create(const std::shared_ptr<RenderContext>& renderContext);
-
+    void init();
     void render();
 
 private:
-    std::shared_ptr<RenderContext> renderContext;
+    RefCntAutoPtr<ISwapChain> swapChain;
+    RefCntAutoPtr<IDeviceContext> deviceContext;
+    RefCntAutoPtr<IRenderDevice> renderDevice;
     RefCntAutoPtr<IPipelineState> pipelineState;
 };

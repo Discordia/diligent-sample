@@ -1,18 +1,13 @@
-#include <core/RenderContext.h>
+#include <core/RendererFactory.h>
 
+#include <vector>
+#include <EngineFactoryOpenGL.h>
+#include <Common/interface/RefCntAutoPtr.hpp>
+
+using namespace Diligent;
 using std::vector;
 
-RenderContext::RenderContext(
-        RefCntAutoPtr<IRenderDevice> renderDevice,
-        RefCntAutoPtr<IDeviceContext> deviceContext,
-        RefCntAutoPtr<ISwapChain> swapChain)
-            : renderDevice(std::move(renderDevice)),
-            deviceContext(std::move(deviceContext)),
-            swapChain(std::move(swapChain)) {}
-
-RenderContext::~RenderContext() = default;
-
-RenderContext RenderContext::create(const NativeWindow *nativeWindow) {
+Renderer RendererFactory::create(void* windowHandle) {
     RefCntAutoPtr<IRenderDevice> device;
     RefCntAutoPtr<IDeviceContext> immediateContext;
     std::vector<RefCntAutoPtr<IDeviceContext>> deferredContexts;
@@ -26,7 +21,7 @@ RenderContext RenderContext::create(const NativeWindow *nativeWindow) {
 
     auto* factoryOpenGL = GetEngineFactoryOpenGL();
     EngineGLCreateInfo createInfo;
-    createInfo.Window = *nativeWindow;
+    createInfo.Window = NativeWindow{windowHandle};
 
     if (createInfo.NumDeferredContexts != 0) {
         createInfo.NumDeferredContexts = 0;
@@ -48,17 +43,6 @@ RenderContext RenderContext::create(const NativeWindow *nativeWindow) {
         deferredContexts[ctx].Attach(contexts[1 + ctx]);
     }
 
-    return RenderContext(device, immediateContext, swapChain);
+    return Renderer(device, immediateContext, swapChain);
 }
 
-RefCntAutoPtr<ISwapChain> RenderContext::getSwapChain() {
-    return swapChain;
-}
-
-RefCntAutoPtr<IRenderDevice> RenderContext::getRenderDevice() {
-    return renderDevice;
-}
-
-RefCntAutoPtr<IDeviceContext> RenderContext::getDeviceContext() {
-    return deviceContext;
-}

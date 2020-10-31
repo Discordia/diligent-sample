@@ -6,8 +6,8 @@ using std::unique_ptr;
 using std::make_unique;
 using std::make_shared;
 
-GLFWWindow::GLFWWindow(GLFWwindow *window, std::shared_ptr<RenderContext> renderContext)
-    : window(window), renderContext(std::move(renderContext)) {}
+GLFWWindow::GLFWWindow(GLFWwindow *window)
+    : window(window) {}
 
 GLFWWindow::~GLFWWindow() {
     glfwTerminate();
@@ -30,12 +30,7 @@ unique_ptr<GLFWWindow> GLFWWindow::create(const string& title) {
     }
 
     glfwMakeContextCurrent(window);
-    void* windowHandle = static_cast<void*>(glfwGetCocoaWindow(window));
-
-    NativeWindow nativeWindow{windowHandle};
-
-    auto renderContext = make_shared<RenderContext>(RenderContext::create(&nativeWindow));
-    return make_unique<GLFWWindow>(window, renderContext);
+    return make_unique<GLFWWindow>(window);
 }
 
 bool GLFWWindow::running() {
@@ -50,6 +45,6 @@ void GLFWWindow::swapBuffers() {
     glfwSwapBuffers(window);
 }
 
-shared_ptr<RenderContext> GLFWWindow::getRenderContext() {
-    return renderContext;
+void* GLFWWindow::getWindowHandle() {
+    return static_cast<void*>(glfwGetCocoaWindow(this->window));
 }

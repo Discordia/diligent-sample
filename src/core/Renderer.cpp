@@ -40,19 +40,22 @@ void main(in  PSInput  PSIn,
 }
 )";
 
-Renderer::Renderer(std::shared_ptr<RenderContext>  renderContext, RefCntAutoPtr<IPipelineState> pipelineState)
-    : renderContext(std::move(renderContext)), pipelineState(std::move(pipelineState)) {}
+Renderer::Renderer(const RefCntAutoPtr<IRenderDevice>& renderDevice,
+                   const RefCntAutoPtr<IDeviceContext>& deviceContext,
+                   const RefCntAutoPtr<ISwapChain>& swapChain)
+    : renderDevice(renderDevice),
+    deviceContext(deviceContext),
+    swapChain(swapChain) {}
 
-Renderer Renderer::create(const std::shared_ptr<RenderContext>& renderContext) {
+void Renderer::init() {
     GraphicsPipelineStateCreateInfo PSOCreateInfo;
-    RefCntAutoPtr<IPipelineState> pipelineState;
 
     PSOCreateInfo.PSODesc.Name = "Simple triangle PSO";
     PSOCreateInfo.PSODesc.PipelineType = PIPELINE_TYPE_GRAPHICS;
 
     PSOCreateInfo.GraphicsPipeline.NumRenderTargets             = 1;
-    PSOCreateInfo.GraphicsPipeline.RTVFormats[0]                = renderContext->getSwapChain()->GetDesc().ColorBufferFormat;
-    PSOCreateInfo.GraphicsPipeline.DSVFormat                    = renderContext->getSwapChain()->GetDesc().DepthBufferFormat;
+    PSOCreateInfo.GraphicsPipeline.RTVFormats[0]                = swapChain->GetDesc().ColorBufferFormat;
+    PSOCreateInfo.GraphicsPipeline.DSVFormat                    = swapChain->GetDesc().DepthBufferFormat;
     PSOCreateInfo.GraphicsPipeline.PrimitiveTopology            = PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     PSOCreateInfo.GraphicsPipeline.RasterizerDesc.CullMode      = CULL_MODE_NONE;
     PSOCreateInfo.GraphicsPipeline.DepthStencilDesc.DepthEnable = False;
@@ -67,7 +70,7 @@ Renderer Renderer::create(const std::shared_ptr<RenderContext>& renderContext) {
         ShaderCI.EntryPoint = "main";
         ShaderCI.Desc.Name = "Triangle vertex shader";
         ShaderCI.Source = vertexShaderSource;
-        renderContext->getRenderDevice()->CreateShader(ShaderCI, &pVS);
+        renderDevice->CreateShader(ShaderCI, &pVS);
     }
 
     RefCntAutoPtr<IShader> pPS;
@@ -76,27 +79,26 @@ Renderer Renderer::create(const std::shared_ptr<RenderContext>& renderContext) {
         ShaderCI.EntryPoint = "main";
         ShaderCI.Desc.Name = "Triangle pixel shader";
         ShaderCI.Source = pixelShaderSource;
-        renderContext->getRenderDevice()->CreateShader(ShaderCI, &pPS);
+        renderDevice->CreateShader(ShaderCI, &pPS);
     }
 
     PSOCreateInfo.pVS = pVS;
     PSOCreateInfo.pPS = pPS;
-    renderContext->getRenderDevice()->CreateGraphicsPipelineState(PSOCreateInfo, &pipelineState);
-    return Renderer(renderContext, pipelineState);
+    renderDevice->CreateGraphicsPipelineState(PSOCreateInfo, &pipelineState);
 }
 
 void Renderer::render() {
-    auto* pRTV = renderContext->getSwapChain()->GetCurrentBackBufferRTV();
-    auto* pDSV = renderContext->getSwapChain()->GetDepthBufferDSV();
-    renderContext->getDeviceContext()->SetRenderTargets(1, &pRTV, pDSV, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+    auto* pRTV = swapChain->GetCurrentBackBufferRTV();
+    auto* pDSV = swapChain->GetDepthBufferDSV();
+    deviceContext->SetRenderTargets(1, &pRTV, pDSV, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
     const float ClearColor[] = {0.350f, 0.350f, 0.350f, 1.0f};
-    renderContext->getDeviceContext()->ClearRenderTarget(pRTV, ClearColor, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-    renderContext->getDeviceContext()->ClearDepthStencil(pDSV, CLEAR_DEPTH_FLAG, 1.f, 0,RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-    renderContext->getDeviceContext()->SetPipelineState(pipelineState);
-    renderContext->getDeviceContext()->CommitShaderResources(nullptr, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+    deviceContext->ClearRenderTarget(pRTV, ClearColor, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+    deviceContext->ClearDepthStencil(pDSV, CLEAR_DEPTH_FLAG, 1.f, 0,RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+    deviceContext->SetPipelineState(pipelineState);
+    deviceContext->CommitShaderResources(nullptr, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
     DrawAttribs drawAttrs;
     drawAttrs.NumVertices = 3;
-    renderContext->getDeviceContext()->Draw(drawAttrs);
+    deviceContext->Draw(drawAttrs);
 }

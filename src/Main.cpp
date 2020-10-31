@@ -1,10 +1,10 @@
 #include <core/GLFWWindow.h>
-#include <core/Renderer.h>
+#include <core/RendererFactory.h>
 
 int main() {
     auto window = GLFWWindow::create("Diligent Sample");
-    auto renderContext = window->getRenderContext();
-    auto renderer = Renderer::create(renderContext);
+    auto renderer = RendererFactory::create(window->getWindowHandle());
+    renderer.init();
 
     while (window->running()) {
         renderer.render();
